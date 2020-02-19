@@ -1,0 +1,59 @@
+# Mark the commands below to be run as a batch
+batch
+      
+# Add H2 driver
+# /subsystem=datasources/jdbc-driver=h2:add(driver-name=h2,driver-module-name=com.h2database.h2,driver-xa-datasource-class-name=org.h2.jdbcx.JdbcDataSource)
+      
+# Add non-xa datasource for jBPM runtime DB
+data-source add --name=jBPMDS --driver-name=h2 --jndi-name=java:jboss/datasources/XjBPMDS --connection-url=jdbc:jdbc:h2:file:${jboss.server.data.dir}/jbpm-db;MVCC=TRUE --user-name=sa --password=sa --use-java-context=true --max-pool-size=25 --blocking-timeout-wait-millis=5000 --enabled=true
+
+# Add XA datasource for jBPM runtime DB
+# xa-data-source add --name="pool-name" --jndi-name=java:jboss/datasources/jBPMDS --enabled=true --driver-name=h2 --user-name=sa --password=sa --xa-datasource-class=org.h2.jdbcx.JdbcDataSource --xa-datasource-properties=[{URL=jdbc:h2:file:${jboss.server.data.dir}/jbpm-db;MVCC=TRUE}]
+
+# Add EJB Timers datasource
+# xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:file:${jboss.server.data.dir}/jbpm-ejb-ds;MVCC=TRUE}]
+xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:tcp://localhost/~/${jboss.server.data.dir}/jbpm-ejb-ds;MVCC=TRUE}]
+
+
+# Create EJB Timer service
+/subsystem=ejb3/service=timer-service:remove
+/subsystem=ejb3/service=timer-service:add(thread-pool-name=default,default-data-store=ejb_timer_ds)
+/subsystem=ejb3/service=timer-service/database-data-store=ejb_timer_ds:add(datasource-jndi-name=java:jboss/datasources/EjbTimerDS,database=h2,partition=ejb_timer_part,allow-execution=true)
+/subsystem=ejb3/service=timer-service/file-data-store=default-file-store:add(path=timer-service-data,relative-to=jboss.server.data.dir)
+/subsystem=ejb3:write-attribute(name="default-mdb-instance-pool", value=mdb-strict-max-pool)
+/subsystem=ejb3:write-attribute(name="default-resource-adapter-name", value=${ejb.resource-adapter-name:activemq-ra.rar})
+
+# Change properties files for users and groups
+/core-service=management/security-realm=ApplicationRealm/authentication=properties:write-attribute(name=path,value=application-users.properties)
+/core-service=management/security-realm=ApplicationRealm/authorization=properties:write-attribute(name=path,value=application-roles.properties)
+
+# Clean default system properties
+/system-property=org.kie.server.controller:remove()
+/system-property=org.jbpm.casemgmt.showcase.url:remove()
+/system-property=org.jbpm.ht.admin.group:remove()
+/system-property=org.jbpm.task.cleanup.enabled:remove()
+/system-property=org.kie.server.persistence.ds:remove()
+/system-property=appformer.experimental.features:remove()
+/system-property=org.kie.prometheus.server.ext.disabled:remove()
+/system-property=kie.keystore.keyStoreURL:remove()
+/system-property=kie.keystore.keyStorePwd:remove()
+/system-property=kie.keystore.key.server.alias:remove()
+/system-property=kie.keystore.key.server.pwd:remove()
+/system-property=kie.keystore.key.ctrl.alias:remove()
+/system-property=kie.keystore.key.ctrl.pwd:remove()
+
+# Add custom system properties
+/system-property=org.kie.server.id:add(value=jbpm-development-server)
+/system-property=org.kie.server.location:add(value=http://localhost:8080/kie-server/services/rest/server)
+/system-property=org.kie.server.controller:add(value=http://localhost:8080/business-central/rest/controller)
+/system-property=org.kie.server.controller.user:add(value=controllerUser)
+/system-property=org.kie.server.controller.pwd:add(value=password@1 )
+/system-property=org.kie.server.user:add(value=controllerUser)
+/system-property=org.kie.server.pwd:add(value=password@1)
+/system-property=org.jbpm.task.cleanup.enabled:add(value=false)
+/system-property=appformer.experimental.features:add(value=true)
+/system-property=org.kie.prometheus.server.ext.disabled:add(value=true)
+/system-property=org.kie.server.persistence.ds:add(value=java:jboss/datasources/jBPMDS)
+
+# Execute the batch
+run-batch
