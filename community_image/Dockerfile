@@ -18,11 +18,10 @@ RUN chmod 755 $JBOSS_HOME/configure-standalone.sh
 RUN chown jboss:root $JBOSS_HOME/configure-standalone.sh
 
 # Create directory for persistent repositories (git, maven, kie, db, users)
-RUN mkdir /opt/jboss/repositories
-RUN mkdir /opt/jboss/repositories/git
-RUN mkdir /opt/jboss/repositories/maven
-RUN mkdir /opt/jboss/repositories/kie
-RUN mkdir /opt/jboss/data
+RUN mkdir -p /opt/jboss/repositories/git
+RUN mkdir -p /opt/jboss/repositories/maven
+RUN mkdir -p /opt/jboss/repositories/kie
+RUN mkdir -p /opt/jboss/data
 RUN mkdir $JBOSS_HOME/standalone/configuration/users_groups_data
 RUN chown -R jboss:jboss $JBOSS_HOME/standalone/configuration/users_groups_data
 RUN chown -R jboss:jboss /opt/jboss/data
