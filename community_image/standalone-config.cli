@@ -5,14 +5,13 @@ batch
 # /subsystem=datasources/jdbc-driver=h2:add(driver-name=h2,driver-module-name=com.h2database.h2,driver-xa-datasource-class-name=org.h2.jdbcx.JdbcDataSource)
       
 # Add non-xa datasource for jBPM runtime DB
-data-source add --name=jBPMDS --driver-name=h2 --jndi-name=java:jboss/datasources/XjBPMDS --connection-url=jdbc:jdbc:h2:file:${jboss.server.data.dir}/jbpm-db;MVCC=TRUE --user-name=sa --password=sa --use-java-context=true --max-pool-size=25 --blocking-timeout-wait-millis=5000 --enabled=true
+data-source add --name=nonXAjBPMDS --driver-name=h2 --jndi-name=java:jboss/datasources/nonXAjBPMDS --connection-url=jdbc:h2:tcp://localhost/~/data/jbpm-runtime-db;MVCC=TRUE --user-name=sa --password=sa --use-java-context=true --max-pool-size=25 --blocking-timeout-wait-millis=5000 --enabled=true
 
 # Add XA datasource for jBPM runtime DB
-# xa-data-source add --name="pool-name" --jndi-name=java:jboss/datasources/jBPMDS --enabled=true --driver-name=h2 --user-name=sa --password=sa --xa-datasource-class=org.h2.jdbcx.JdbcDataSource --xa-datasource-properties=[{URL=jdbc:h2:file:${jboss.server.data.dir}/jbpm-db;MVCC=TRUE}]
+xa-data-source add --name="XAjBPMDS" --jndi-name=java:jboss/datasources/XAjBPMDS --enabled=true --driver-name=h2 --user-name=sa --password=sa --xa-datasource-class=org.h2.jdbcx.JdbcDataSource --xa-datasource-properties=[{URL=jdbc:h2:tcp://localhost/~/data/jbpm-runtime-db;MVCC=TRUE}]
 
 # Add EJB Timers datasource
-# xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:file:${jboss.server.data.dir}/jbpm-ejb-ds;MVCC=TRUE}]
-xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:tcp://localhost/~/${jboss.server.data.dir}/jbpm-ejb-ds;MVCC=TRUE}]
+xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTimerDS --enabled=true --driver-name=h2 --use-java-context=true --spy=false --use-ccm=true --tracking=false --enlistment-trace=false --statistics-enabled=true --transaction-isolation=TRANSACTION_READ_COMMITTED --user-name=sa --password=sa --xa-datasource-properties=[{URL=jdbc:h2:tcp://localhost/~/data/jbpm-ejb-ds;MVCC=TRUE}]
 
 
 # Create EJB Timer service
@@ -53,7 +52,12 @@ xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTim
 /system-property=org.jbpm.task.cleanup.enabled:add(value=false)
 /system-property=appformer.experimental.features:add(value=true)
 /system-property=org.kie.prometheus.server.ext.disabled:add(value=true)
-/system-property=org.kie.server.persistence.ds:add(value=java:jboss/datasources/jBPMDS)
+/system-property=org.kie.server.persistence.ds:add(value=java:jboss/datasources/XAjBPMDS)
+/system-property=org.uberfire.nio.git.dir:add(value=/opt/jboss/repositories/git)
+/system-property=org.uberfire.metadata.index.dir:add(value=/opt/jboss/repositories/git)
+/system-property=org.guvnor.m2repo.dir:add(value=/opt/jboss/repositories/maven)
+/system-property=org.kie.server.repo:add(value=/opt/jboss/repositories/kie)
+/system-property=jbpm.overdue.timer.delay:add(value=60000)
 
 # Execute the batch
 run-batch
