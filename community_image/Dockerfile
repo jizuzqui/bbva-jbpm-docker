@@ -30,13 +30,20 @@ RUN chown -R jboss:jboss /opt/jboss/repositories
 USER jboss
 
 RUN mv $JBOSS_HOME/standalone/deployments/*war $JBOSS_HOME/standalone/ 
+RUN mkdir -p $JBOSS_HOME/standalone/deployments/kie-server.war
+RUN mkdir -p $JBOSS_HOME/standalone/deployments/business-central.war
+RUN mkdir -p $JBOSS_HOME/standalone/deployments/jbpm-casemgmt.war
 
 RUN $JBOSS_HOME/configure-standalone.sh
 
-RUN mv $JBOSS_HOME/standalone/*.war $JBOSS_HOME/standalone/deployments/
+RUN unzip $JBOSS_HOME/standalone/business-central.war -d $JBOSS_HOME/standalone/deployments/business-central.war
+RUN unzip $JBOSS_HOME/standalone/kie-server.war -d $JBOSS_HOME/standalone/deployments/kie-server.war
+COPY ./libs/jbpm-event-emitters-elasticsearch-7.33.0.Final.jar $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib
+RUN unzip $JBOSS_HOME/standalone/jbpm-casemgmt.war -d $JBOSS_HOME/standalone/deployments/jbpm-casemgmt.war
 
 RUN touch $JBOSS_HOME/standalone/deployments/business-central.war.dodeploy
 RUN touch $JBOSS_HOME/standalone/deployments/kie-server.war.dodeploy
+RUN touch $JBOSS_HOME/standalone/deployments/jbpm-casemgmt.war.dodeploy
 
 RUN $JBOSS_HOME/bin/add-user.sh -a -u controllerUser -p password@1 -g kie-server,rest-all
 RUN $JBOSS_HOME/bin/add-user.sh -a -u jbpmAdmin -p password@1 -g admin,kie-server,rest-all
