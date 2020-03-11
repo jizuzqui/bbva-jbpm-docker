@@ -59,6 +59,7 @@ xa-data-source add --name="EjbTimerDS" --jndi-name=java:jboss/datasources/EjbTim
 /system-property=org.kie.server.repo:add(value=/opt/jboss/repositories/kie)
 /system-property=jbpm.overdue.timer.delay:add(value=60000)
 /system-property=org.jbpm.event.emitters.elasticsearch.url:add(value=http://elasticsearch:9200)
+/system-property=org.uberfire.nio.git.hooks:add(value=/opt/jboss/git-hooks)
 
 # Execute the batch
 run-batch

@@ -14,6 +14,7 @@ COPY ./standalone-config.cli $JBOSS_HOME
 
 USER root
 
+RUN yum -y install git
 RUN chmod 755 $JBOSS_HOME/configure-standalone.sh
 RUN chown jboss:root $JBOSS_HOME/configure-standalone.sh
 
@@ -22,10 +23,14 @@ RUN mkdir -p /opt/jboss/repositories/git
 RUN mkdir -p /opt/jboss/repositories/maven
 RUN mkdir -p /opt/jboss/repositories/kie
 RUN mkdir -p /opt/jboss/data
+RUN mkdir -p /opt/jboss/git-hooks
 RUN mkdir $JBOSS_HOME/standalone/configuration/users_groups_data
 RUN chown -R jboss:jboss $JBOSS_HOME/standalone/configuration/users_groups_data
 RUN chown -R jboss:jboss /opt/jboss/data
 RUN chown -R jboss:jboss /opt/jboss/repositories
+COPY ./post-commit /opt/jboss/git-hooks
+RUN chown -R jboss:jboss /opt/jboss/git-hooks
+RUN chmod 744 /opt/jboss/git-hooks/post-commit
 
 USER jboss
 

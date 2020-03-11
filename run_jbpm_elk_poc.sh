@@ -4,6 +4,12 @@ JBPM_BBVA_IMAGE_VERSION=$2
 JBPM_IMAGE_NAME=jizuzquiza/jbpm-bbva-holding
 JBPM_CONTAINER_NAME=jbpm-bbva-holding
 JBOSS_HOME=/opt/jboss/wildfly
+ELASTICSEARCH_IMAGE_NAME=docker.elastic.co/elasticsearch/elasticsearch
+ELASTICSEARCH_CONTAINER_NAME=elasticsearch
+ELASTICSEARCH_VERSION=7.6.0
+KIBANA_IMAGE_NAME=docker.elastic.co/kibana/kibana
+KIBANA_CONTAINER_NAME=kibana
+KIBANA_VERSION=7.6.0
 
 if [ -z "$JBPM_PERSISTENT_DIR" ]
 then
@@ -25,7 +31,10 @@ mkdir -p $JBPM_PERSISTENT_DIR/user_group_data
 
 docker pull $JBPM_IMAGE_NAME:$JBPM_BBVA_IMAGE_VERSION 
 
-docker network create jbpm-elk-poc || true
+#if [ "$(docker network ls | grep -w jbpm-elk-poc 2> /dev/null)" == "" ]
+#then
+    docker network create jbpm-elk-poc
+#fi
 
 docker run -p 8080:8080 -p 8001:8001 -p 8082:8082 -p 9990:9990 \
     --mount source=jbpm-logs,target=$JBOSS_HOME/standalone/log/ \
@@ -33,19 +42,28 @@ docker run -p 8080:8080 -p 8001:8001 -p 8082:8082 -p 9990:9990 \
     --mount source=jbpm-repositories,target=/opt/jboss/repositories/ \
     --mount source=jbpm-data,target=/opt/jboss/data/ \
     --mount source=jbpm-user-group-data,target=$JBOSS_HOME/standalone/configuration/ \
-    --network jbpm-elk-poc \ 
+    --network jbpm-elk-poc \
     -d --name $JBPM_CONTAINER_NAME $JBPM_IMAGE_NAME:$JBPM_BBVA_IMAGE_VERSION
 
-docker run -p 9200:9200 -p 9300:9300 --name elasticsearch --network jbpm-elk-poc \
-    -d -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+#if [ "$(docker ps -a | awk '{print $NF}' | grep -w elasticsearch | cat 2> /dev/null)" == "" ]
+#then
+#    if [ $(docker images -q $ELASTICSEARCH_IMAGE_NAME:$ELASTICSEARCH_VERSION 2> /dev/null)" == "" ]
+#    then
+        docker pull $ELASTICSEARCH_IMAGE_NAME:$ELASTICSEARCH_VERSION
+#    fi
 
-docker run -p 5601:5601 --name kibana --network jbpm-elk-poc \
-    -d docker.elastic.co/kibana/kibana:7.6.0
+    docker run -p 9200:9200 -p 9300:9300 --name $ELASTICSEARCH_CONTAINER_NAME --network jbpm-elk-poc \
+        -d -e "discovery.type=single-node" -e "xpack.security.enabled=false" $ELASTICSEARCH_IMAGE_NAME:$ELASTICSEARCH_VERSION
+#fi
 
-# docker run -p 8080:8080 -p 8001:8001 -p 8082:8082 -p 9990:9990 \
-#    -v $JBPM_PERSISTENT_DIR/logs/:$JBOSS_HOME/standalone/log/ \
-#    -v $JBPM_PERSISTENT_DIR/repositories/mvn_home/:/opt/jboss/.m2/ \
-#    -v $JBPM_PERSISTENT_DIR/repositories/:/opt/jboss/repositories/ \
-#    -v $JBPM_PERSISTENT_DIR/data/:/opt/jboss/data/ \
-#    -v $JBPM_PERSISTENT_DIR/user_group_data/:$JBOSS_HOME/standalone/configuration/ \
-#    -d --name $JBPM_CONTAINER_NAME $JBPM_IMAGE_NAME:$JBPM_BBVA_IMAGE_VERSION
+#if [ "$(docker ps -a | awk '{print $NF}' | grep -w kibana | cat 2> /dev/null)" == "" ]
+#then
+#    if [ "$(docker images -q  2> /dev/null)" == "" ]
+#    then
+        docker pull $KIBANA_IMAGE_NAME:$KIBANA_VERSION
+#    fi
+
+    docker run -p 5601:5601 --name $KIBANA_CONTAINER_NAME --network jbpm-elk-poc \
+        -d $KIBANA_IMAGE_NAME:$KIBANA_VERSION
+#fi
+
