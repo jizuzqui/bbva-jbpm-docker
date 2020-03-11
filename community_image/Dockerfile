@@ -15,6 +15,7 @@ COPY ./standalone-config.cli $JBOSS_HOME
 USER root
 
 RUN yum -y install git
+RUN yum -y install maven
 RUN chmod 755 $JBOSS_HOME/configure-standalone.sh
 RUN chown jboss:root $JBOSS_HOME/configure-standalone.sh
 
