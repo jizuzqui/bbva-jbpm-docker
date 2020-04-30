@@ -42,6 +42,7 @@ docker run -p 8080:8080 -p 8001:8001 -p 8082:8082 -p 9990:9990 \
     --mount source=jbpm-repositories,target=/opt/jboss/repositories/ \
     --mount source=jbpm-data,target=/opt/jboss/data/ \
     --mount source=jbpm-user-group-data,target=$JBOSS_HOME/standalone/configuration/ \
+    --mount source=jbpm-mock-services,target=/opt/jboss/mock-server/services/ \
     --network jbpm-elk-poc \
     -d --name $JBPM_CONTAINER_NAME $JBPM_IMAGE_NAME:$JBPM_BBVA_IMAGE_VERSION
 
@@ -66,4 +67,3 @@ docker run -p 8080:8080 -p 8001:8001 -p 8082:8082 -p 9990:9990 \
     docker run -p 5601:5601 --name $KIBANA_CONTAINER_NAME --network jbpm-elk-poc \
         -d $KIBANA_IMAGE_NAME:$KIBANA_VERSION
 #fi
-
