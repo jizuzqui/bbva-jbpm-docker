@@ -25,17 +25,18 @@ RUN rm $JBOSS_HOME/standalone/deployments/business-central.war.* $JBOSS_HOME/sta
         && touch $JBOSS_HOME/standalone/deployments/jbpm-casemgmt.war.dodeploy \
         && $JBOSS_HOME/bin/add-user.sh -a -u controllerUser -p password@1 -g kie-server,rest-all \
         && $JBOSS_HOME/bin/add-user.sh -a -u jbpmAdmin -p password@1 -g admin,kie-server,rest-all \
+	&& $JBOSS_HOME/bin/add-user.sh admin password@1 \
 	&& $JBOSS_HOME/configure-standalone.sh \
 	&& rm -rf $JBOSS_HOME/standalone/tmp \
 	&& rm -rf $JBOSS_HOME/standalone/data \
-	&& sed '/bash/a java -Dh2.bindAddress=0.0.0.0 -jar /opt/jboss/wildfly/modules/system/layers/base/com/h2database/h2/main/h2-1.4.193.jar -tcp -web -webAllowOthers &' -i start_jbpm-wb.sh \
+	&& sed '/bash/a java -Dh2.bindAddress=0.0.0.0 -jar /opt/jboss/wildfly/modules/system/layers/base/com/h2database/h2/main/h2-1.4.197.jar -tcp -web -webAllowOthers &' -i start_jbpm-wb.sh \
         && sed '/bash/a /opt/jboss/mock-server/start-mock-server.sh' -i start_jbpm-wb.sh \
         && sed '/bash/a /opt/jboss/mock-server/watch-mock-services-definitions.sh &' -i start_jbpm-wb.sh \
         && sed '/bash/a echo \"Initializing h2 server...\"' -i start_jbpm-wb.sh
 
 COPY ./mock-server/ /opt/jboss/mock-server
 COPY ./post-commit /opt/jboss/git-hooks
-COPY ./libs/jbpm-event-emitters-elasticsearch-7.33.0.Final.jar $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib
+# COPY ./libs/jbpm-event-emitters-elasticsearch-7.33.0.Final.jar $JBOSS_HOME/standalone/deployments/kie-server.war/WEB-INF/lib
 
 RUN chmod 744 /opt/jboss/git-hooks/post-commit \
 	&& chown -R jboss:jboss /opt/jboss

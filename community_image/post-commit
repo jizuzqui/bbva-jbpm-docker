@@ -17,7 +17,7 @@ echo $DATE >> $LOGDIR
 echo $COMMENT >> $LOGDIR
 
 if [[ "$MESSAGE" == \[push\]* ]]; then
-        git push origin master 2>>$LOGDIR
+        git push --all origin 2>>$LOGDIR
 fi
 
 echo "----------------------------------------------------" >> $LOGDIR
